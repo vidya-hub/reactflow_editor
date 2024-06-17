@@ -6,7 +6,10 @@ export default function HomeScreen() {
   return (
     <div>
       <div className="w-screen h-screen flex flex-row relative">
+        {/*TODO: panel for react flow */}
         <EditorPanel></EditorPanel>
+
+        {/*TODO: panel for Settings */}
         <SettingsPanel></SettingsPanel>
       </div>
     </div>

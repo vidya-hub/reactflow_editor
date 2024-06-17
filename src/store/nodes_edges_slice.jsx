@@ -2,6 +2,7 @@ import { createSlice } from "@reduxjs/toolkit";
 
 const initialState = {
   selectedNode: null,
+  dragEndDetails: null,
   nodes: [
     {
       id: "1",
@@ -60,6 +61,9 @@ const nodeEdgesSlice = createSlice({
     addEdge: (state, action) => {
       state.edges = [...state.edges, action.payload];
     },
+    updateDragEndData: (state, action) => {
+      state.dragEndDetails = action.payload;
+    },
   },
 });
 
@@ -71,6 +75,8 @@ export const {
   updateNode,
   selectNode,
   addNode,
+  addEdge,
+  updateDragEndData,
 } = nodeEdgesSlice.actions;
 
 export default nodeEdgesSlice.reducer;

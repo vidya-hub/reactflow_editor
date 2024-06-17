@@ -28,7 +28,7 @@ export default function EditorPanel() {
   const reactFlowWrapper = useRef(null);
   const dispatch = useDispatch();
 
-  const { nodes, edges, canUpdate, selectedNode } = useSelector(
+  const { nodes, edges, canUpdate, selectedNode, dragEndDetails } = useSelector(
     (state) => state.flow
   );
 
@@ -60,9 +60,6 @@ export default function EditorPanel() {
 
   function updateSelectedNode() {
     setReactFlowNodes((nodes) => {
-      if (!reactFlowNodes) {
-        return nodes;
-      }
       const newNodes = nodes.map((node) => {
         if (selectedNode && node.id === selectedNode.id) {
           return { ...node, ...selectedNode };
@@ -97,34 +94,37 @@ export default function EditorPanel() {
     event.dataTransfer.dropEffect = "move";
   }, []);
 
-  const onDrop = useCallback(
-    (event) => {
-      event.preventDefault();
-      const type = event.dataTransfer.getData("application/reactflow");
-      if (!type) {
-        return;
-      }
+  useEffect(() => {
+    if (dragEndDetails) {
+      console.log(dragEndDetails);
+      const reactFlowBounds = reactFlowWrapper.current.getBoundingClientRect();
+
       const position = reactFlowInstance.screenToFlowPosition({
-        x: event.clientX - 100,
-        y: event.clientY - 50,
+        x: dragEndDetails.x - reactFlowBounds.left,
+        y: dragEndDetails.y - reactFlowBounds.top,
       });
 
-      const id = Math.floor(Math.random() * 100);
+      const id = Math.floor(Math.random() * 1000);
       const newNode = {
         id: `${id}`,
         type: "sendMessageNode",
-        position,
+        // position,
+        position: {
+          x: Math.abs(dragEndDetails.x),
+          y: Math.abs(dragEndDetails.y),
+        },
         data: {
           title: `Send Message`,
           content: "",
         },
       };
-
+      console.log(newNode);
       setReactFlowNodes((nds) => nds.concat(newNode));
       dispatch(addNode(newNode));
-    },
-    [dispatch, reactFlowInstance, setReactFlowNodes]
-  );
+    }
+    return () => {};
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [dragEndDetails]);
 
   const onEdgesConnect = useCallback(
     (connection) => {
@@ -185,7 +185,6 @@ export default function EditorPanel() {
             edges={reactFlowEdges}
             onEdgesChange={handleEdgesChange}
             onConnect={onEdgesConnect}
-            onDrop={onDrop}
             onInit={setReactFlowInstance}
             onDragOver={onDragOver}
             onNodeClick={onNodeClick}

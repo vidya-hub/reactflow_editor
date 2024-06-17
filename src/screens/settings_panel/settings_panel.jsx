@@ -1,22 +1,23 @@
-import React, { useRef, useEffect, useCallback } from "react";
+import React, { useRef, useEffect, useCallback, useState } from "react";
 import { BiArrowBack, BiMessageRoundedDetail } from "react-icons/bi";
 import { useDispatch, useSelector } from "react-redux";
 import classNames from "classnames";
 import { FaWhatsapp } from "react-icons/fa";
 import { toast } from "react-toastify";
-import { updateNode, selectNode } from "../../store/nodes_edges_slice";
+import {
+  updateNode,
+  selectNode,
+  updateDragEndData,
+} from "../../store/nodes_edges_slice";
+import Draggable from "react-draggable";
 
 export default function SettingsPanel() {
   const dispatch = useDispatch();
-
-  const onDragStart = (event, nodeType) => {
-    event.dataTransfer.setData("application/reactflow", nodeType);
-    event.dataTransfer.effectAllowed = "move";
-  };
   const textRef = useRef(null);
   const selectedNode = useSelector(function (state) {
     return state.flow.selectedNode;
   });
+  const [position, updatePosition] = useState({ x: 0, y: 0 });
   useEffect(() => {
     if (textRef.current) {
       if (selectedNode.data && selectedNode.data.content) {
@@ -46,7 +47,13 @@ export default function SettingsPanel() {
     };
     dispatch(updateNode(updatedNode));
   }, [dispatch, selectedNode, textRef]);
+  function onDragStart() {}
 
+  function onDragStop(_, data) {
+    updatePosition({ x: data.x, y: data.y });
+    dispatch(updateDragEndData({ x: data.x, y: data.y }));
+  }
+  const dragHandlers = { onStart: onDragStart, onStop: onDragStop };
   return (
     <div className=" w-2/6 border-l-2 border-t-2">
       <div className="bg-white border-b-2 h-30 flex items-center justify-start p-2 ">
@@ -100,18 +107,18 @@ export default function SettingsPanel() {
             </div>
           </>
         ) : (
-          <div className="bg-white m-3 py-5 rounded-md shadow-md border-2 border-messageBorder w-40 cursor-grab">
-            <div className="h-30 flex items-center justify-center p-2">
-              <div
-                className="input"
-                onDragStart={(event) => onDragStart(event, "messageNode")}
-                draggable
-              >
-                <BiMessageRoundedDetail className="w-full flex-grow justify-center items-center text-messageBorder" />
-                <span className="align-middle text-messageBorder">Message</span>
+          <Draggable {...dragHandlers} position={position}>
+            <div className="bg-white m-3 py-5 rounded-md shadow-md border-2 border-messageBorder w-40 cursor-grab">
+              <div className="h-30 flex items-center justify-center p-2">
+                <div>
+                  <BiMessageRoundedDetail className="w-full flex-grow justify-center items-center text-messageBorder" />
+                  <span className="align-middle text-messageBorder">
+                    Message
+                  </span>
+                </div>
               </div>
             </div>
-          </div>
+          </Draggable>
         )}
       </aside>
     </div>
