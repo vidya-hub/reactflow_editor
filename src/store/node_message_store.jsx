@@ -1,9 +1,11 @@
 import { configureStore } from "@reduxjs/toolkit";
-import nodeSlice from "./node_slice";
+import selectedNodeSlice from "./selected_node_slice";
+import nodeEdgesSlice from "./nodes_edges_slice";
 
 const store = configureStore({
   reducer: {
-    node: nodeSlice,
+    node: selectedNodeSlice,
+    flow: nodeEdgesSlice,
   },
 });
 

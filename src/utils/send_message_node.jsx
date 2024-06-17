@@ -8,13 +8,13 @@ const SendMessageNode = ({ id, data }) => {
   const selectedNode = useSelector(function (state) {
     return state.node.selectedNode;
   });
-  console.log(selectedNode, id);
   return (
     <div
       className={classNames(
         "bg-white rounded-md shadow-md shadow-gray-400 w-80",
         {
-          "border-2  border-gray-400": selectedNode && selectedNode.id === id,
+          "border-2  border-gray-400 shadow-sm shadow-messageBorder":
+            selectedNode && selectedNode.id === id,
         }
       )}
     >
@@ -25,7 +25,7 @@ const SendMessageNode = ({ id, data }) => {
         </span>
         <FaWhatsapp className="ml-2" />
       </div>
-      <div style={{ marginTop: 10 }}>{data.content}</div>
+      <div className="p-3">{data.content ? data.content : "No message"}</div>
       <Handle
         type="target"
         position={Position.Left}

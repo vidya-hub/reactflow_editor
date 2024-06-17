@@ -1,5 +1,5 @@
 import { createSlice } from "@reduxjs/toolkit";
-const nodeSlice = createSlice({
+const selectedNodeSlice = createSlice({
   name: "nodeSlice",
   initialState: {
     selectedNode: null,
@@ -15,5 +15,5 @@ const nodeSlice = createSlice({
     },
   },
 });
-export const { selectNode } = nodeSlice.actions;
-export default nodeSlice.reducer;
+export const { selectNode } = selectedNodeSlice.actions;
+export default selectedNodeSlice.reducer;

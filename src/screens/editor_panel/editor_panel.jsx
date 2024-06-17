@@ -1,4 +1,4 @@
-import React, { useCallback, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import ReactFlow, {
   ReactFlowProvider,
   Background,
@@ -9,35 +9,58 @@ import ReactFlow, {
 } from "reactflow";
 import SendMessageNode from "../../utils/send_message_node";
 import DirectionalEdge from "../../utils/custom_edge";
-import MessageNode from "../../utils/message_node";
-import { useDispatch } from "react-redux";
-import { selectNode } from "../../store/node_slice";
+import { useDispatch, useSelector } from "react-redux";
+import { selectNode } from "../../store/selected_node_slice";
+import { toast } from "react-toastify";
+import { setEdges, setNodes } from "../../store/nodes_edges_slice";
 const nodeTypes = {
   sendMessageNode: SendMessageNode,
-  messageNode: MessageNode,
 };
 const edgeTypes = {
   customEdge: DirectionalEdge,
 };
 
 export default function EditorPanel() {
-  const initialElements = [
-    {
-      id: "1",
-      type: "sendMessageNode", // custom node
-      data: {
-        title: "Send Message",
-        content: Math.floor(Math.random() * 100),
-      },
-      position: { x: 250, y: 100 },
-    },
-  ];
-  const initialEdges = [];
   const reactFlowWrapper = useRef(null);
-  const [nodes, setNodes, onNodesChange] = useNodesState(initialElements);
-  const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
-  const [reactFlowInstance, setReactFlowInstance] = useState(null);
+  const nodes = useSelector((state) => state.flow.nodes);
+  const edges = useSelector((state) => state.flow.edges);
   const dispatch = useDispatch();
+
+  const [reactFlowNodes, setReactFlowNodes, onNodesChange] =
+    useNodesState(nodes);
+  const [reactFlowEdges, setReactFlowEdges, onEdgesChange] =
+    useEdgesState(edges);
+  const handleNodesChange = useCallback(
+    (changes) => {
+      onNodesChange(changes);
+      setReactFlowNodes((nds) => {
+        return nds;
+      });
+      dispatch(setNodes(reactFlowNodes));
+    },
+    [dispatch, onNodesChange, reactFlowNodes, setReactFlowNodes]
+  );
+
+  const handleEdgesChange = useCallback(
+    (changes) => {
+      onEdgesChange(changes);
+      setReactFlowEdges((eds) => {
+        return eds;
+      });
+      dispatch(setEdges(reactFlowEdges));
+    },
+    [dispatch, onEdgesChange, reactFlowEdges, setReactFlowEdges]
+  );
+
+  useEffect(() => {
+    console.log(reactFlowNodes, nodes);
+    dispatch(setNodes(reactFlowNodes));
+  }, [reactFlowNodes, nodes, dispatch]);
+
+  useEffect(() => {
+    dispatch(setEdges(reactFlowEdges));
+  }, [reactFlowEdges, dispatch]);
+  const [reactFlowInstance, setReactFlowInstance] = useState(null);
 
   const onDragOver = useCallback((event) => {
     event.preventDefault();
@@ -47,44 +70,43 @@ export default function EditorPanel() {
     (event) => {
       event.preventDefault();
       const type = event.dataTransfer.getData("application/reactflow");
-      if (typeof type === "undefined" || !type) {
+      if (!type) {
         return;
       }
+
       const position = reactFlowInstance.screenToFlowPosition({
-        x: event.clientX,
-        y: event.clientY,
+        x: event.clientX - 100,
+        y: event.clientY - 50,
       });
+
       const id = Math.floor(Math.random() * 100);
       const newNode = {
         id: `${id}`,
-        type,
+        type: "sendMessageNode",
         position,
         data: {
-          title: `Send Message ${id}`,
+          title: `Send Message`,
           content: "",
         },
       };
-      setNodes((nds) => {
-        console.log(newNode);
-        return nds.concat(newNode);
-      });
-    },
-    [reactFlowInstance, setNodes]
-  );
 
+      setReactFlowNodes((nds) => nds.concat(newNode));
+    },
+    [reactFlowInstance, setReactFlowNodes]
+  );
   const onConnect = useCallback(
     (connection) => {
       const canConnect =
         edges.filter((edge) => edge.source === connection.source).length === 0;
       console.log(edges);
       if (!canConnect) {
-        alert("You can't connect the source node");
+        toast.error("Only one output connection per node is allowed!");
         return;
       }
       connection.markerEnd = { type: MarkerType.ArrowClosed };
-      return setEdges((edges) => addEdge(connection, edges));
+      setReactFlowEdges((eds) => addEdge(connection, eds));
     },
-    [setEdges, edges]
+    [edges, setReactFlowEdges]
   );
   const onNodeClick = useCallback(
     (event, node) => {
@@ -103,7 +125,7 @@ export default function EditorPanel() {
           ref={reactFlowWrapper}
         >
           <ReactFlow
-            onNodesChange={onNodesChange}
+            onNodesChange={handleNodesChange}
             nodeTypes={nodeTypes}
             edgeTypes={edgeTypes}
             style={{ width: "100%", height: "90%" }}
@@ -112,7 +134,7 @@ export default function EditorPanel() {
             elementsSelectable={false}
             nodes={nodes}
             edges={edges}
-            onEdgesChange={onEdgesChange}
+            onEdgesChange={handleEdgesChange}
             onConnect={onConnect}
             onDrop={onDrop}
             onInit={setReactFlowInstance}
