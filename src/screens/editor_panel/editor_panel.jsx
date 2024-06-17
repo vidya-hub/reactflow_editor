@@ -27,10 +27,12 @@ const edgeTypes = {
 export default function EditorPanel() {
   const reactFlowWrapper = useRef(null);
   const dispatch = useDispatch();
-
+  // Get the required data from the store
   const { nodes, edges, canUpdate, selectedNode } = useSelector(
     (state) => state.flow
   );
+
+  // initialize necessary hooks for react flow to handle node and edge changes
 
   const [reactFlowNodes, setReactFlowNodes, onNodesChange] =
     useNodesState(nodes);
@@ -38,12 +40,7 @@ export default function EditorPanel() {
     useEdgesState(edges);
   const [reactFlowInstance, setReactFlowInstance] = useState(null);
 
-  useEffect(() => {
-    updateSelectedNode();
-    return () => {};
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [canUpdate]);
-
+  // this will be triggered to retrieve and display the saved nodes and edges
   useEffect(() => {
     const edges = JSON.parse(localStorage.getItem("edges"));
     const nodes = JSON.parse(localStorage.getItem("nodes"));
@@ -58,6 +55,13 @@ export default function EditorPanel() {
     return () => {};
   }, [dispatch, setReactFlowEdges, setReactFlowNodes]);
 
+  // on changing the message content this use effect will trigger
+  // check the updateNode action in nodes_edges_slice.jsx
+  useEffect(() => {
+    updateSelectedNode();
+    return () => {};
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [canUpdate]);
   function updateSelectedNode() {
     setReactFlowNodes((nodes) => {
       if (!reactFlowNodes) {
@@ -74,6 +78,7 @@ export default function EditorPanel() {
     dispatch(selectNode(null));
   }
 
+  // handleEdgesChange and handleNodesChange will be triggered whenever draggable changes are happened in nodes and edges
   const handleEdgesChange = useCallback(
     (changes) => {
       onEdgesChange(changes);
@@ -91,12 +96,12 @@ export default function EditorPanel() {
     },
     [dispatch, onNodesChange, reactFlowNodes]
   );
-
+  // this is the target method will be triggered while dragging the message node to editing panel
   const onDragOver = useCallback((event) => {
     event.preventDefault();
     event.dataTransfer.dropEffect = "move";
   }, []);
-
+  // Event handler while any drop target came inside reactflowinstance
   const onDrop = useCallback(
     (event) => {
       event.preventDefault();
@@ -125,7 +130,8 @@ export default function EditorPanel() {
     },
     [dispatch, reactFlowInstance, setReactFlowNodes]
   );
-
+  //
+  // on connecting two nodes onEdgesConnect will be triggered to update state in locally and in Store
   const onEdgesConnect = useCallback(
     (connection) => {
       const canConnect =
@@ -149,7 +155,7 @@ export default function EditorPanel() {
     },
     [dispatch]
   );
-
+  // handler for saving the nodes and edges data
   function saveNodesEdges() {
     const nodeIds = [...new Set(reactFlowNodes.map((item) => item.id))];
     const canSave = nodeIds.map((nodeId) => {
@@ -158,6 +164,7 @@ export default function EditorPanel() {
       );
     });
     if (canSave.indexOf(false) !== -1) {
+      // TODO: show an error if there are more than one Nodes and more than one Node has empty target handles
       toast.error("Can't save changes");
       return;
     }

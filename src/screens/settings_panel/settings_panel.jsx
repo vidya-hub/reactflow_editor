@@ -8,7 +8,8 @@ import { updateNode, selectNode } from "../../store/nodes_edges_slice";
 
 export default function SettingsPanel() {
   const dispatch = useDispatch();
-
+  // event handler to set the node type to add in editing panel
+  // refer onDragOver & onDrop methods
   const onDragStart = (event, nodeType) => {
     event.dataTransfer.setData("application/reactflow", nodeType);
     event.dataTransfer.effectAllowed = "move";
@@ -28,6 +29,7 @@ export default function SettingsPanel() {
     return () => {};
   }, [selectedNode]);
 
+  // on clicking on the submit trigger updateNode action in store
   const onSubmit = useCallback(() => {
     if (selectedNode == null) {
       return;
@@ -100,16 +102,16 @@ export default function SettingsPanel() {
             </div>
           </>
         ) : (
-          <div className="bg-white m-3 py-5 rounded-md shadow-md border-2 border-messageBorder w-40 cursor-grab">
-            <div className="h-30 flex items-center justify-center p-2">
-              <div
-                className="input"
-                onDragStart={(event) => onDragStart(event, "messageNode")}
-                draggable
-              >
-                <BiMessageRoundedDetail className="w-full flex-grow justify-center items-center text-messageBorder" />
-                <span className="align-middle text-messageBorder">Message</span>
-              </div>
+          <div
+            onDragStart={(event) => onDragStart(event, "messageNode")}
+            draggable
+            className="input bg-white m-3 py-5 rounded-md shadow-md border-2 border-messageBorder w-40 cursor-grab"
+          >
+            <div className="h-30 p-2">
+              <BiMessageRoundedDetail className="w-full flex-grow justify-center items-center text-messageBorder" />
+              <h2 className=" text-center flex-grow justify-center items-center text-messageBorder ">
+                Message
+              </h2>
             </div>
           </div>
         )}
