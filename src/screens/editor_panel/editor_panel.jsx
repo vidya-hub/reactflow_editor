@@ -10,9 +10,8 @@ import ReactFlow, {
 import SendMessageNode from "../../utils/send_message_node";
 import DirectionalEdge from "../../utils/custom_edge";
 import { useDispatch, useSelector } from "react-redux";
-import { selectNode } from "../../store/selected_node_slice";
 import { toast } from "react-toastify";
-import { setEdges, setNodes } from "../../store/nodes_edges_slice";
+import { setEdges, setNodes, selectNode } from "../../store/nodes_edges_slice";
 const nodeTypes = {
   sendMessageNode: SendMessageNode,
 };
@@ -33,12 +32,9 @@ export default function EditorPanel() {
   const handleNodesChange = useCallback(
     (changes) => {
       onNodesChange(changes);
-      setReactFlowNodes((nds) => {
-        return nds;
-      });
       dispatch(setNodes(reactFlowNodes));
     },
-    [dispatch, onNodesChange, reactFlowNodes, setReactFlowNodes]
+    [dispatch, onNodesChange, reactFlowNodes]
   );
 
   const handleEdgesChange = useCallback(
@@ -51,15 +47,30 @@ export default function EditorPanel() {
     },
     [dispatch, onEdgesChange, reactFlowEdges, setReactFlowEdges]
   );
-
+  const selectedNode = useSelector(function (state) {
+    return state.flow.selectedNode;
+  });
+  // useEffect(() => {
+  // console.log(nodes);
+  // if (selectedNode) {
+  //   setReactFlowNodes((nds) =>
+  //     nds.map((node) => {
+  //       if (node.id === selectedNode.id) {
+  //         node = selectedNode;
+  //       }
+  //       return node;
+  //     })
+  //   );
+  // }
+  // }, [nodes, selectedNode, setReactFlowNodes]);
   useEffect(() => {
-    console.log(reactFlowNodes, nodes);
+    console.log(nodes);
     dispatch(setNodes(reactFlowNodes));
   }, [reactFlowNodes, nodes, dispatch]);
 
   useEffect(() => {
     dispatch(setEdges(reactFlowEdges));
-  }, [reactFlowEdges, dispatch]);
+  }, [dispatch, reactFlowEdges]);
   const [reactFlowInstance, setReactFlowInstance] = useState(null);
 
   const onDragOver = useCallback((event) => {

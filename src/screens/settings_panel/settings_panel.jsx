@@ -1,11 +1,10 @@
 import React, { useRef, useEffect, useCallback } from "react";
 import { BiArrowBack, BiMessageRoundedDetail } from "react-icons/bi";
 import { useDispatch, useSelector } from "react-redux";
-import { selectNode } from "../../store/selected_node_slice";
 import classNames from "classnames";
 import { FaWhatsapp } from "react-icons/fa";
 import { toast } from "react-toastify";
-import { updateNode } from "../../store/nodes_edges_slice";
+import { updateNode, selectNode } from "../../store/nodes_edges_slice";
 
 export default function SettingsPanel() {
   const dispatch = useDispatch();
@@ -16,7 +15,7 @@ export default function SettingsPanel() {
   };
   const textRef = useRef(null);
   const selectedNode = useSelector(function (state) {
-    return state.node.selectedNode;
+    return state.flow.selectedNode;
   });
   useEffect(() => {
     if (textRef.current) {
@@ -46,7 +45,7 @@ export default function SettingsPanel() {
       },
     };
     dispatch(updateNode(updatedNode));
-    dispatch(selectNode(null));
+    // dispatch(selectNode(null));
   }, [dispatch, selectedNode, textRef]);
 
   return (

@@ -6,7 +6,7 @@ import { useSelector } from "react-redux";
 import classNames from "classnames";
 const SendMessageNode = ({ id, data }) => {
   const selectedNode = useSelector(function (state) {
-    return state.node.selectedNode;
+    return state.flow.selectedNode;
   });
   return (
     <div
