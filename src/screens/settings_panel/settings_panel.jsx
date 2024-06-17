@@ -45,7 +45,6 @@ export default function SettingsPanel() {
       },
     };
     dispatch(updateNode(updatedNode));
-    // dispatch(selectNode(null));
   }, [dispatch, selectedNode, textRef]);
 
   return (

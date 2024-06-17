@@ -14,6 +14,7 @@ const initialState = {
     },
   ],
   edges: [],
+  canUpdate: false,
 };
 
 const nodeEdgesSlice = createSlice({
@@ -43,6 +44,8 @@ const nodeEdgesSlice = createSlice({
         }
         return node;
       });
+      state.selectedNode = action.payload;
+      state.canUpdate = !state.canUpdate;
     },
     selectNode: (state, action) => {
       const node =
@@ -50,6 +53,12 @@ const nodeEdgesSlice = createSlice({
           ? null
           : action.payload;
       state.selectedNode = node;
+    },
+    addNode: (state, action) => {
+      state.nodes = [...state.nodes, action.payload];
+    },
+    addEdge: (state, action) => {
+      state.edges = [...state.edges, action.payload];
     },
   },
 });
@@ -61,6 +70,7 @@ export const {
   updateEdges,
   updateNode,
   selectNode,
+  addNode,
 } = nodeEdgesSlice.actions;
 
 export default nodeEdgesSlice.reducer;

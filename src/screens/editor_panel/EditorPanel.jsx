@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, { useCallback, useRef, useState } from "react";
 import ReactFlow, {
   ReactFlowProvider,
   Background,
@@ -7,8 +7,6 @@ import ReactFlow, {
   addEdge,
   MarkerType,
 } from "reactflow";
-import SendMessageNode from "../../utils/send_message_node";
-import DirectionalEdge from "../../utils/custom_edge";
 import { useDispatch, useSelector } from "react-redux";
 import { toast } from "react-toastify";
 import {
@@ -17,12 +15,7 @@ import {
   selectNode,
   addNode,
 } from "../../store/nodes_edges_slice";
-const nodeTypes = {
-  sendMessageNode: SendMessageNode,
-};
-const edgeTypes = {
-  customEdge: DirectionalEdge,
-};
+import { nodeTypes, edgeTypes } from "./editor_panel";
 
 export default function EditorPanel() {
   const reactFlowWrapper = useRef(null);
@@ -41,30 +34,6 @@ export default function EditorPanel() {
     },
     [dispatch, onNodesChange, reactFlowNodes]
   );
-  const flowState = useSelector(function (state) {
-    return state.flow;
-  });
-  useEffect(() => {
-    updateSelectedNode();
-    return () => {};
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [flowState.canUpdate]);
-
-  function updateSelectedNode() {
-    setReactFlowNodes((nodes) => {
-      if (!reactFlowNodes) {
-        return nodes;
-      }
-      const newNodes = nodes.map((node) => {
-        if (flowState.selectedNode && node.id === flowState.selectedNode.id) {
-          return { ...node, ...flowState.selectedNode };
-        }
-        return node;
-      });
-      return newNodes;
-    });
-    dispatch(selectNode(null));
-  }
 
   const handleEdgesChange = useCallback(
     (changes) => {
@@ -76,6 +45,9 @@ export default function EditorPanel() {
     },
     [dispatch, onEdgesChange, reactFlowEdges, setReactFlowEdges]
   );
+  // const selectedNode = useSelector(function (state) {
+  //   return state.flow.selectedNode;
+  // });
   const [reactFlowInstance, setReactFlowInstance] = useState(null);
 
   const onDragOver = useCallback((event) => {
@@ -123,8 +95,9 @@ export default function EditorPanel() {
       }
       connection.markerEnd = { type: MarkerType.ArrowClosed };
       setReactFlowEdges((eds) => addEdge(connection, eds));
+      console.log(connection);
     },
-    [edges, reactFlowEdges, setReactFlowEdges]
+    [edges, setReactFlowEdges]
   );
   const onNodeClick = useCallback(
     (event, node) => {

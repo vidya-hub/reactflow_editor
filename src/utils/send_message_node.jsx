@@ -8,6 +8,7 @@ const SendMessageNode = ({ id, data }) => {
   const selectedNode = useSelector(function (state) {
     return state.flow.selectedNode;
   });
+  // console.log("Inside state ", data);
   return (
     <div
       className={classNames(
