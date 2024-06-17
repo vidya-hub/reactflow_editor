@@ -17,7 +17,7 @@ export default function SettingsPanel() {
   const selectedNode = useSelector(function (state) {
     return state.flow.selectedNode;
   });
-  const [position, updatePosition] = useState({ x: 0, y: 0 });
+  // const [position, updatePosition] = useState({ x: 0, y: 0 });
   useEffect(() => {
     if (textRef.current) {
       if (selectedNode.data && selectedNode.data.content) {
@@ -50,7 +50,7 @@ export default function SettingsPanel() {
   function onDragStart() {}
 
   function onDragStop(_, data) {
-    updatePosition({ x: data.x, y: data.y });
+    // updatePosition({ x: data.x, y: data.y });
     dispatch(updateDragEndData({ x: data.x, y: data.y }));
   }
   const dragHandlers = { onStart: onDragStart, onStop: onDragStop };
@@ -107,7 +107,7 @@ export default function SettingsPanel() {
             </div>
           </>
         ) : (
-          <Draggable {...dragHandlers} position={position}>
+          <Draggable {...dragHandlers} position={{ x: 0, y: 0 }}>
             <div className="bg-white m-3 py-5 rounded-md shadow-md border-2 border-messageBorder w-40 cursor-grab">
               <div className="h-30 flex items-center justify-center p-2">
                 <div>

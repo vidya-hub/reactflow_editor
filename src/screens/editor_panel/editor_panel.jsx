@@ -110,8 +110,8 @@ export default function EditorPanel() {
         type: "sendMessageNode",
         // position,
         position: {
-          x: Math.abs(dragEndDetails.x),
-          y: Math.abs(dragEndDetails.y),
+          x: dragEndDetails.x,
+          y: dragEndDetails.y,
         },
         data: {
           title: `Send Message`,
