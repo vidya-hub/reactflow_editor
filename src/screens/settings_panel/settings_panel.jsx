@@ -92,7 +92,7 @@ export default function SettingsPanel() {
                   onClick={() => {
                     dispatch(selectNode(null));
                   }}
-                  className="bg-gray-500 hover:bg-gray-700 text-white font-bold  py-2 px-4 rounded"
+                  className="border border-red-600 hover:bg-red-500 hover:text-white text-black  font-bold  py-2 px-4 rounded"
                 >
                   Cancel
                 </button>

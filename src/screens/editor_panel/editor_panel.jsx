@@ -26,29 +26,37 @@ const edgeTypes = {
 
 export default function EditorPanel() {
   const reactFlowWrapper = useRef(null);
-  const nodes = useSelector((state) => state.flow.nodes);
-  const edges = useSelector((state) => state.flow.edges);
   const dispatch = useDispatch();
+
+  const { nodes, edges, canUpdate, selectedNode } = useSelector(
+    (state) => state.flow
+  );
 
   const [reactFlowNodes, setReactFlowNodes, onNodesChange] =
     useNodesState(nodes);
   const [reactFlowEdges, setReactFlowEdges, onEdgesChange] =
     useEdgesState(edges);
-  const handleNodesChange = useCallback(
-    (changes) => {
-      onNodesChange(changes);
-      dispatch(setNodes(reactFlowNodes));
-    },
-    [dispatch, onNodesChange, reactFlowNodes]
-  );
-  const flowState = useSelector(function (state) {
-    return state.flow;
-  });
+  const [reactFlowInstance, setReactFlowInstance] = useState(null);
+
   useEffect(() => {
     updateSelectedNode();
     return () => {};
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [flowState.canUpdate]);
+  }, [canUpdate]);
+
+  useEffect(() => {
+    const edges = JSON.parse(localStorage.getItem("edges"));
+    const nodes = JSON.parse(localStorage.getItem("nodes"));
+    if (edges) {
+      dispatch(setEdges(edges));
+      setReactFlowEdges(edges);
+    }
+    if (nodes) {
+      dispatch(setNodes(nodes));
+      setReactFlowNodes(nodes);
+    }
+    return () => {};
+  }, [dispatch, setReactFlowEdges, setReactFlowNodes]);
 
   function updateSelectedNode() {
     setReactFlowNodes((nodes) => {
@@ -56,8 +64,8 @@ export default function EditorPanel() {
         return nodes;
       }
       const newNodes = nodes.map((node) => {
-        if (flowState.selectedNode && node.id === flowState.selectedNode.id) {
-          return { ...node, ...flowState.selectedNode };
+        if (selectedNode && node.id === selectedNode.id) {
+          return { ...node, ...selectedNode };
         }
         return node;
       });
@@ -76,12 +84,19 @@ export default function EditorPanel() {
     },
     [dispatch, onEdgesChange, reactFlowEdges, setReactFlowEdges]
   );
-  const [reactFlowInstance, setReactFlowInstance] = useState(null);
+  const handleNodesChange = useCallback(
+    (changes) => {
+      onNodesChange(changes);
+      dispatch(setNodes(reactFlowNodes));
+    },
+    [dispatch, onNodesChange, reactFlowNodes]
+  );
 
   const onDragOver = useCallback((event) => {
     event.preventDefault();
     event.dataTransfer.dropEffect = "move";
   }, []);
+
   const onDrop = useCallback(
     (event) => {
       event.preventDefault();
@@ -89,7 +104,6 @@ export default function EditorPanel() {
       if (!type) {
         return;
       }
-
       const position = reactFlowInstance.screenToFlowPosition({
         x: event.clientX - 100,
         y: event.clientY - 50,
@@ -111,7 +125,8 @@ export default function EditorPanel() {
     },
     [dispatch, reactFlowInstance, setReactFlowNodes]
   );
-  const onConnect = useCallback(
+
+  const onEdgesConnect = useCallback(
     (connection) => {
       const canConnect =
         reactFlowEdges.filter((edge) => edge.source === connection.source)
@@ -127,7 +142,7 @@ export default function EditorPanel() {
     [edges, reactFlowEdges, setReactFlowEdges]
   );
   const onNodeClick = useCallback(
-    (event, node) => {
+    (_, node) => {
       if (node) {
         dispatch(selectNode(node));
       }
@@ -135,8 +150,24 @@ export default function EditorPanel() {
     [dispatch]
   );
 
+  function saveNodesEdges() {
+    const nodeIds = [...new Set(reactFlowNodes.map((item) => item.id))];
+    const canSave = nodeIds.map((nodeId) => {
+      return reactFlowEdges.some(
+        (edge) => edge.target === nodeId || edge.source === nodeId
+      );
+    });
+    if (canSave.indexOf(false) !== -1) {
+      toast.error("Can't save changes");
+      return;
+    }
+    localStorage.setItem("edges", JSON.stringify(reactFlowEdges));
+    localStorage.setItem("nodes", JSON.stringify(reactFlowNodes));
+    toast.success("Saved successfully");
+  }
+
   return (
-    <div className="w-4/6">
+    <div className="w-4/6 relative">
       <ReactFlowProvider>
         <div
           className="reactflow-wrapper flex-grow h-full"
@@ -153,7 +184,7 @@ export default function EditorPanel() {
             nodes={reactFlowNodes}
             edges={reactFlowEdges}
             onEdgesChange={handleEdgesChange}
-            onConnect={onConnect}
+            onConnect={onEdgesConnect}
             onDrop={onDrop}
             onInit={setReactFlowInstance}
             onDragOver={onDragOver}
@@ -161,6 +192,14 @@ export default function EditorPanel() {
           >
             <Background color="green" gap={16} />
           </ReactFlow>
+        </div>
+        <div className="absolute top-3 right-3">
+          <button
+            className="hover:bg-blue-600 bg-white text-blue-600 hover:text-white border border-blue-700  font-bold py-2 px-4 rounded cursor-auto"
+            onClick={() => saveNodesEdges()}
+          >
+            Save Changes
+          </button>
         </div>
       </ReactFlowProvider>
     </div>
